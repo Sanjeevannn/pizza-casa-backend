@@ -8,11 +8,13 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { CategoriesModule } from './categories/categories.module';
+import { FoodModule } from './products/food/food.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }), // loads .env
-    DatabaseModule, UsersModule, AuthModule,                           // connects MongoDB
+    DatabaseModule, UsersModule, AuthModule, CategoriesModule, FoodModule,                           // connects MongoDB
   ],
   controllers: [AppController],
   providers: [AppService],

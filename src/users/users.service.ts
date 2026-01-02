@@ -2,17 +2,22 @@
    Controller should NEVER access database directly */
 
 //src/users/users.service.ts
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './schemas/user.schema';
+import { DeleteReason, DeleteReasonDocument } from './schemas/delete-reason.schema';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
-  ) {}
+
+    @InjectModel(DeleteReason.name)
+    private readonly deleteReasonModel: Model<DeleteReasonDocument>,
+  ) { }
 
   // Returns all users without passwords
   async findAll() {
@@ -67,4 +72,39 @@ export class UsersService {
     if (!updated) throw new NotFoundException('User not found after update');
     return updated;
   }
+
+  // Deletes user account after verifying password
+  async deleteAccount(
+    userId: string,
+    currentPassword: string,
+    reason: string,
+  ) {
+    // 1. Find user
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    // 2. Verify password
+    const match = await bcrypt.compare(currentPassword, user.password);
+    if (!match) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+    // 3. Save delete reason
+    await this.deleteReasonModel.create({
+      userId,
+      reason,
+    });
+
+    // 4. Delete user account
+    await this.userModel.deleteOne({ _id: userId });
+    return { message: 'Account deleted successfully' };
+  }
+
+  async updateProfileImage(userId: string, imageUrl: string) {
+    await this.userModel.updateOne({ _id: userId }, { profileImage: imageUrl });
+    const updatedUser = await this.userModel.findById(userId).select('-password');
+    if (!updatedUser) throw new NotFoundException('User not found');
+    return updatedUser;
+  }
+
 }

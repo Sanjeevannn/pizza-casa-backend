@@ -1,7 +1,8 @@
 # API_DOCS.md
+<!----------------------------------------------------------->
 
 ## Auth Endpoints
-
+------------------
 ### POST /auth/request-otp
 Request a 6-digit OTP to email.  
 Used for **registration** and **forgot password**.  
@@ -11,7 +12,7 @@ Body:
   "email": "user@mail.com"
 }
 
----
+---------------------------------------------
 
 ### POST /auth/register
 Register new customer after OTP verification.  
@@ -27,7 +28,7 @@ Body:
   "otp": "123456"
 }
 
----
+---------------------------------------------
 
 ### POST /auth/login
 Login using email or username.  
@@ -39,7 +40,7 @@ Body:
   "password": "password"
 }
 
----
+---------------------------------------------
 
 ### POST /auth/forgot-password
 Reset password using OTP (user not logged in).  
@@ -56,7 +57,7 @@ Body:
   "newPassword": "newPassword123"
 }
 
----
+---------------------------------------------
 
 ### POST /auth/change-password
 Change password for logged-in user.  
@@ -71,10 +72,10 @@ Body:
   "newPassword": "newPassword123"
 }
 
----
+<!----------------------------------------------------------->
 
 ## Admin Endpoints (JWT + Role = ADMIN)
-
+---------------------------------------
 ### POST /admin/create-cashier
 Create cashier account.  
 Only admin token allowed.  
@@ -89,7 +90,7 @@ Body:
   "password": "password123"
 }
 
----
+---------------------------------------------
 
 ### POST /admin/create-delivery
 Create delivery account.  
@@ -107,7 +108,120 @@ Body:
   "phone": "0771234567"
 }
 
----
+---------------------------------------------
+## Category Endpoints
+
+### POST /categories
+Create a new category.
+Only admin token allowed.  
+
+Headers:
+Authorization: Bearer <ADMIN_JWT_TOKEN>
+Content-Type: multipart/form-data
+
+Body:
+key: name   → value: Pizza
+key: image  → value: <select image file>
+
+---------------------------------------------
+
+### PUT /categories/:id
+Update category name and/or image.
+Only admin token allowed.  
+
+Headers:
+Authorization: Bearer <ADMIN_JWT_TOKEN>
+Content-Type: multipart/form-data
+
+Body (form-data):
+key: name   → value: Burgers
+key: image  → value: <select new image file>
+
+---------------------------------------------
+
+### DELETE /categories/:id
+Delete a category.
+Only admin token allowed. 
+
+Headers:
+Authorization: Bearer <ADMIN_JWT_TOKEN>
+
+---------------------------------------------
+
+### GET /categories
+Get all categories.
+Accessible by customer, cashier, delivery, admin.
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+---------------------------------------------
+
+## Food Endpoints
+
+### GET /food
+Get all food items.
+Accessible by all logged-in users.
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+---------------------------------------------
+
+### POST /food
+Create a food item (Admin only).
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+Content-Type: multipart/form-data
+
+Body (form-data):
+**with image**
+key: name              → Chicken Pizza
+key: shortDescription  → Tasty pizza
+key: longDescription   → Full description
+key: ingredients       → cheese, chicken
+key: price             → 1200
+key: type              → halal
+key: categoryId        → <category_id>
+key: categoryName      → Pizza
+key: image             → <select image file>
+
+**Without Image**
+Body:
+{
+  "name": "food name",
+  "shortDescription": "short",
+  "longDescription": "Full description",
+  "ingredients": ["cheese", "chicken"],
+  "price": 1200,
+  "type": "halal",
+  "categoryId": "<category_id>"
+}
+
+---------------------------------------------
+
+### PUT /food/:id
+Update food item (Admin only).
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+Body:
+{
+
+}
+
+---------------------------------------------
+
+### DELETE /food/:id
+Delete food item (Admin only).
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+
+<!----------------------------------------------------------->
 
 ## Users Endpoints (JWT Protected)
 
@@ -119,7 +233,7 @@ Response excludes passwords.
 Headers:
 Authorization: Bearer <JWT_TOKEN>
 
----
+---------------------------------------------
 
 ### PUT /users/update-profile
 Update logged-in user profile.  
@@ -137,7 +251,7 @@ Body:
   "salutation": "Mr"
 }
 
----
+---------------------------------------------
 
 ### POST /auth/change-password
 Change password using current password.  
@@ -151,3 +265,50 @@ Body:
   "currentPassword": "oldPassword123",
   "newPassword": "newPassword123"
 }
+
+---------------------------------------------
+
+### POST /users/delete-account
+Delete Account using current password.  
+User must be logged in.
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+Body:
+{
+  "currentPassword": "Pass@1234",
+  "reason": "I no longer need this app"
+}
+
+---------------------------------------------
+
+### PUT /users/profile-images
+PUT upload profile image
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+Content-Type: multipart/form-data
+
+Body:
+key=image, value=<select from device>
+
+---------------------------------------------
+
+### GET /categories
+Get all categories.
+Accessible by customer, cashier, delivery, admin.
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+---------------------------------------------
+
+### GET /food
+Get all food items.
+Accessible by all logged-in users.
+
+Headers:
+Authorization: Bearer <JWT_TOKEN>
+
+---------------------------------------------
